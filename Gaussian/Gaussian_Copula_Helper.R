@@ -31,13 +31,18 @@ rGaussian_cond <- function(v, rho, n_samples = 1) {
 # print(samples)
 
 lam2rho <- function(lam) {
-  rho <- (exp(2*lam)-1)/(exp(2*lam)+1)
+  (exp(2*lam)-1)/(exp(2*lam)+1)
 }
 
-dGaussian <- function(rho, data) {
+dGaussian <- function(rho, data, log=T) {
   x <- qnorm(data[1])
   y <- qnorm(data[2])
-  (1-rho^2)^{-1/2}*exp(-0.5*(rho^2*x^2-2*rho*x*y+rho^2*y^2)/(1-rho^2))
+  if (log) {
+    -1/2*log(1-rho^2)+ (-0.5*(rho^2*x^2-2*rho*x*y+rho^2*y^2)/(1-rho^2))
+  } else {
+    (1-rho^2)^{-1/2}*exp(-0.5*(rho^2*x^2-2*rho*x*y+rho^2*y^2)/(1-rho^2))
+  }
+ 
 }
 
 
@@ -51,21 +56,21 @@ dGaussian <- function(rho, data) {
 # gaussian_cop <- normalCopula(param = rho, dim = 2)
 # 
 # # Define the point (u, v) where you want to compute the density
-# u <- 0.4
-# v <- 0.6
+# u <- 1
+# v <- 0
 # 
 # # Compute and print the density of the Gaussian copula at (u, v)
 # density <- dCopula(c(u, v), gaussian_cop)
 # print(density)
 # dGaussian(rho, c(u,v))
 
-lik_at_t <- function(rho_t, data_t) {
-  prod(apply(data_t, 1, function(row) dGaussian(rho_t, row)))
-}
-
-loglik_at_t <- function(rho_t, data_t) {
-  sum(apply(data_t, 1, function(row) log(dGaussian(rho_t, row))))
-}
+# lik_at_t <- function(rho_t, data_t) {
+#   prod(apply(data_t, 1, function(row) dGaussian(rho_t, row)))
+# }
+# 
+# loglik_at_t <- function(rho_t, data_t) {
+#   sum(apply(data_t, 1, function(row) log(dGaussian(rho_t, row))))
+# }
 
 
 lik_at_t <- function(lam_t, data_t) {
@@ -75,7 +80,7 @@ lik_at_t <- function(lam_t, data_t) {
 
 loglik_at_t <- function(lam_t, data_t) {
   rho_t <- lam2rho(lam_t)
-  sum(apply(data_t, 1, function(row) log(dGaussian(rho_t, row))))
+  sum(apply(data_t, 1, function(row) dGaussian(rho_t, row, log=T)))
 }
 # u <- runif(10)
 # v <- runif(10)
@@ -109,6 +114,27 @@ log_prior_lam_t <- function(lam_t_mius, lam_t, lam_t_plus, alp, beta, tau) {
   }
 }
 
+
+########################
+prior_lam_all <- function(lam_all, alp, beta, tau) {
+  dense <- dnorm(lam_all[1],0,sqrt(1/tau))
+  len <- length(lam_all)
+  for (i in 2:len) {
+    dense <- dense* dnorm(lam_all[i], alp+beta*lam_all[i-1], sqrt(1/tau))
+  }
+  dense
+}
+
+
+log_prior_lam_all <- function(lam_all, alp, beta, tau) {
+  dense <- dnorm(lam_all[1],0,sqrt(1/tau),log=T)
+  len <- length(lam_all)
+  for (i in 2:len) {
+    dense <- dense + dnorm(lam_all[i], alp+beta*lam_all[i-1], sqrt(1/tau), log=T)
+  }
+  dense
+}
+
 ########################
 prior_alp <- function(alp, tau_alp) {
   dnorm(alp,0, sqrt(1/tau_alp))
@@ -136,20 +162,4 @@ log_prior_tau <- function(tau, shape_tau, rate_tau) {
   dgamma(tau, shape_tau,rate_tau, log=T)
 }
 
-########################
-prior_lam_all <- function(lam_all, alp, beta, tau) {
-  dense <- dnorm(lam_all[1],0,sqrt(1/tau))
-  len <- length(lam_all)
-  for (i in 2:len) {
-    dense <- dense* dnorm(lam_all[i], alp+beta*lam_all[i-1], sqrt(1/tau))
-  }
-}
 
-
-log_prior_lam_all <- function(lam_all, alp, beta, tau) {
-  dense <- dnorm(lam_all[1],0,sqrt(1/tau),log=T)
-  len <- length(lam_all)
-  for (i in 2:len) {
-    dense <- dense + dnorm(lam_all[i], alp+beta*lam_all[i-1], sqrt(1/tau), log=T)
-  }
-}
