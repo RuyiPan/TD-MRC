@@ -2,7 +2,7 @@
 library(stats)
 
 # Function to sample from the conditional distribution of a bivariate Gaussian copula
-rGaussian_cond <- function(v, rho, n_samples = 1) {
+rGaussian_cond <- function(n_samples = 1, v, rho) {
   # Step 1: Compute z1 (the inverse CDF of the standard normal)
   z1 <- qnorm(v)
   
@@ -37,10 +37,18 @@ lam2rho <- function(lam) {
 dGaussian <- function(rho, data, log=T) {
   x <- qnorm(data[1])
   y <- qnorm(data[2])
-  if (log) {
-    -1/2*log(1-rho^2)+ (-0.5*(rho^2*x^2-2*rho*x*y+rho^2*y^2)/(1-rho^2))
+  if (any(data %in% c(0, 1))) {
+    if (log==T) {
+      log(0)
+    } else {
+      0
+    }
   } else {
-    (1-rho^2)^{-1/2}*exp(-0.5*(rho^2*x^2-2*rho*x*y+rho^2*y^2)/(1-rho^2))
+    if (log) {
+      -1/2*log(1-rho^2)+ (-0.5*(rho^2*x^2-2*rho*x*y+rho^2*y^2)/(1-rho^2))
+    } else {
+      (1-rho^2)^{-1/2}*exp(-0.5*(rho^2*x^2-2*rho*x*y+rho^2*y^2)/(1-rho^2))
+    }
   }
  
 }
@@ -162,4 +170,104 @@ log_prior_tau <- function(tau, shape_tau, rate_tau) {
   dgamma(tau, shape_tau,rate_tau, log=T)
 }
 
+
+
+#LPML
+library(foreach)
+library(doParallel)
+CPO.component <- function(U, rho_t) {
+  1/ dGaussian(rho_t, U, log=F)
+}
+
+CPO <- function(U, rho_all) {
+  L <- length(rho_all)
+  1/mean(do.call(rbind,lapply(1:L, 
+                              function(l) CPO.component(U,rho_all[l]))))
+}
+
+
+LPML <- function(U_all, rho_all) {
+  TT <- length(U_all)
+  GlobalFunctions = ls(globalenv())
+  ncores <- detectCores()
+  cl <- parallel::makeCluster(ncores-2)
+  doParallel::registerDoParallel(cl)
+  
+  res_CPO <- foreach(t=1:TT, .combine="c",
+                     .export = GlobalFunctions)%dopar%{
+                       nt <- nrow(U_all[[t]])
+                       CPO_t <- c(1:nt)
+                       for (i in 1:nt) {
+                         CPO_t[i] <- CPO(U_all[[t]][i,], rho_all[,t])
+                       }
+                       list(CPO_t)
+                     }
+  parallel::stopCluster(cl)
+  
+  log_CPOs <- log(unlist(res_CPO)) 
+  LPML <- sum(log_CPOs[log_CPOs !=-Inf])
+  ALPML <- mean(log_CPOs[log_CPOs !=-Inf])
+  return(LPML)
+}
+
+
+
+
+rho_all <- apply(lam_all[9000:9200,], c(1,2), lam2rho)
+U_all <- data$test
+
+CPO(U_all[[32]][4,],rho_all[, 32])
+
+dGaussian(rho_all[1,32], U_all[[32]][4,], log=F)
+
+LPML(U_all, rho_all)
+
+
+
+
+ll.mg.U <- function(U, rho_t) {
+  dGaussian(rho_t, U, log=T)
+}
+
+
+Devi <- function(U_all, rho_all) {
+  TT <- length(U_all)
+  D.single <- 0
+  for (t in 1:TT) {
+    nt <- nrow(U_all[[t]])
+    for (i in 1:nt) {
+      temp_t <- ll.mg.U(U_all[[t]][i,], rho_all[t])
+      if (temp_t != -Inf) {
+        D.single <-  D.single+ll.mg.U(U_all[[t]][i,], rho_all[t])
+      }
+    }
+  }
+  
+  return (-2*D.single)
+}
+
+
+
+DIC <- function(U_all, lam_all) {
+  rho_all <- apply(lam_all, c(1,2), lam2rho)
+  rho_par <- lam2rho(colMeans(lam_all))
+  L <- dim(rho_all)[1]
+  GlobalFunctions = ls(globalenv())
+  ncores <- detectCores()
+  cl <- parallel::makeCluster(ncores-2)
+  doParallel::registerDoParallel(cl)
+  D_all <- foreach(l=1:L, .combine = "rbind",.export = GlobalFunctions)%dopar% {
+    Devi(U_all, rho_all[l, ])
+  }
+  parallel::stopCluster(cl)
+  PMD <- mean(D_all)
+  
+  D_at_mean <- Devi(U_all, rho_par)
+  
+  DIC <- 2*PMD-D_at_mean
+  return (DIC)
+}
+
+
+DIC(U_all, lam_all[9000:10000,])
 

@@ -3,7 +3,7 @@ source("Gaussian_Copula_Helper.R")
 
 #Read data
 set.seed(20240902)
-job_num <- 0
+job_num <- 1
 # for local 
 data <- readRDS(paste0("../Data/","split", job_num,".rds"))
 # for server
@@ -18,6 +18,13 @@ for (day in c(1:TT)) {
 }
 
 
+U_test <- data$test
+TT<- length(U_test)
+for (day in c(1:TT)) {
+  index <- apply(U_test[[day]],1, function(row) any(row %in% c(0, 1)))
+  U_test[[day]] <- U[[day]][!index,]
+  nts[[day]] <- nrow(U[[day]])
+}
 
 
 
@@ -30,11 +37,11 @@ rate_tau <- 0.01
 #tuning parameters, acceptance rate
 #15, 3, 80 , 0.1915617, 0.2563487, 0.05718856
 #15, 4, 400, 8
-delta_alp <- 12 #15 soso
+delta_alp <- 20 #15 soso
 acc_alp <- 0
 delta_beta <- 4 #4
 acc_beta <- 0
-delta_tau <- 600  #80
+delta_tau <- 500  #80
 acc_tau <- 0
 delta_lam <- 8
 
@@ -165,3 +172,53 @@ for(t in 1:TT) {
 }
 range <- (burn_in*batch.size):(B*batch.size)
 
+
+
+U_test <- data$test
+MSEt <- vector()
+nums <- vector()
+for (t in 1:TT) {
+  predict_mean_u2 <- vector()
+  len <- nrow(U_test[[t]])
+  nums[t] <- len
+  for(n in 1:len) {
+    predict_u2 <- NULL
+    u1 <- U_test[[t]][n,1]
+    for (m in range) {
+      lam_t <- lam_all[m, t]
+      rho_t <- lam2rho(lam_t)
+      predict_u2 <- c(predict_u2, rGaussian_cond(1, u1, rho_t))
+    }
+    predict_mean_u2[n] <- mean(predict_u2)
+    
+  }
+  MSEt[t] <- mean((predict_mean_u2-U_test[[t]][,2])^2)
+}
+
+MSE <- sum(MSEt*nums)/sum(nums)
+
+
+#LPML
+
+
+#DIC
+
+
+#prediction
+#posterior mean of alpha, beta, and lambda_(t-1)
+alp_hat <- mean(alp_all[range])
+beta_hat <- mean(beta_all[range])
+lam_t <- lam_all[, ncol(lam_all[range,])]
+lam_t_hat <- alp_hat + beta_hat * mean(lam_t)
+rho_t_hat  <- lam2rho(lam_t_hat)
+
+MSE #0.08363305 #0.04445941
+
+temp2 <- readRDS("../../../../../Narval/Results/single_cv/job_name=single_cvjob_num=1CV.rds")
+temp2$LPML
+temp2$DIC
+
+temp1 <- readRDS("../../../../../Narval/Results/mix_cv/job_name=mix_cvjob_num=1CV_mix.rds")
+temp1$MSE #0.04299
+temp1$LPML
+temp1$DIC
