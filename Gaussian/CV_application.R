@@ -1,23 +1,24 @@
-#Out of sample prediction performance
-#By using log predictive scores (LPS)
-#We need to fitting the model 6 times 1-30, 1-31, 1-32, 1-33, ..., 1-35
-#and do one step ahead prediction
 library(mvtnorm)
+# library(sparr)
+# library(MCMCprecision)
 library(foreach)
 library(doParallel)
+source("Gaussian_Copula_Helper.R")
+source("LPML_DIC_WAIC.R")
 args=(commandArgs(TRUE))
 job_name=args[1]
 job_num=as.numeric(args[2])
 path=args[3]
-source("Gaussian_Copula_Helper.R")
-source("LPML_DIC_WAIC.R")
-TT <- c(30:35)[job_num]
-set.seed(20240902)
-data  <- readRDS("../Data/PM_O3_2017_2019.rds")
 
-#remove the data contain 1 or 0 because density equal to 0 on boundary
-U_train <- data[1:TT]
-U_test <- data[TT+1]
+#Re data
+set.seed(20240902)
+
+# for local 
+data <- readRDS(paste0("../Data/","split", job_num,".rds"))
+# for server
+# data <- readRDS(paste0("/home/panruyi/scratch/MixCopula/Data/","split", job_num,".rds"))
+U_train <- data$train
+U_test <- data$test
 
 TT<- length(U_train)
 nts <- c(1:TT)
@@ -27,11 +28,13 @@ for (day in c(1:TT)) {
   nts[[day]] <- nrow(U_train[[day]])
 }
 
+
 id_test <- apply(U_test[[1]],1, function(row) any(row %in% c(0, 1)))
 U_test[[1]] <- U_test[[1]][!id_test ,]
 
 
-#hyper-parameters
+
+#hyper-prameters
 tau_alp <- 0.01
 tau_beta <- 0.01
 shape_tau <- 0.01
@@ -146,7 +149,6 @@ for (b in 1:B) {
   }
 }
 
-
 range <- seq(burn_in*batch.size, B*batch.size, 10)
 rho_all <- apply(lam_all[range, ], 1, lam2rho)
 #obtain DIC and LPML, WAIC
@@ -157,25 +159,35 @@ LPML <- LPML(U_train, lam_all[range,])
 #DIC
 DIC <- DIC(U_train, lam_all[range,])
 
-
-predictive_dist <- NULL
-lam_t <- lam_all[, t]
-for (k in range) {
-  lam_t_predict <- alp_all[k] + beta_all[k]*lam_t[k] +
-                   rnorm(1, 0, sqrt(1/tau_all[k]))
-  rho_t_predict <- lam2rho(lam_t_predict)
-  temp_dist <- apply(U_test[[1]], 1, function(row) dGaussian(rho_t_predict , row))
-  predictive_dist <- cbind(predictive_dist, temp_dist)
+U_test <- data$test
+MSEt <- vector()
+nums <- vector()
+for (t in 1:TT) {
+  predict_mean_u2 <- vector()
+  len <- nrow(U_test[[t]])
+  nums[t] <- len
+  for(n in 1:len) {
+    predict_u2 <- NULL
+    u1 <- U_test[[t]][n,1]
+    for (m in range) {
+      lam_t <- lam_all[m, t]
+      rho_t <- lam2rho(lam_t)
+      predict_u2 <- c(predict_u2, rGaussian_cond(1, u1, rho_t))
+    }
+    predict_mean_u2[n] <- mean(predict_u2)
+    
+  }
+  MSEt[t] <- mean((predict_mean_u2-U_test[[t]][,2])^2)
 }
-predictive_dist_mean <- rowMeans(predictive_dist)
-LPS <- sum(log(predictive_dist_mean)) #4.6
+
+MSE <- sum(MSEt*nums)/sum(nums)
+
+
 
 res <- list(U_train=U_train, U_test=U_test, 
             alp_all=alp_all, beta_all=beta_all, tau_all=tau_all, lam_all=lam_all,
             WAIC=WAIC, DIC=DIC, LPML=LPML,
-            predictive_dist=predictive_dist,
-            LPS=LPS)
-
+            MSE=MSE,MSEt=MSEt)
 filename<- paste0("job_name=", job_name,"job_num=", job_num, 
-                  "LPS",".rds")
+                  "CV",".rds")
 saveRDS(res, paste0(path,"/",filename))

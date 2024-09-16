@@ -1,20 +1,29 @@
-
+library(mvtnorm)
+# library(sparr)
+# library(MCMCprecision)
+library(foreach)
+library(doParallel)
 source("Gaussian_Copula_Helper.R")
+source("LPML_DIC_WAIC.R")
+args=(commandArgs(TRUE))
+job_name=args[1]
+job_num=as.numeric(args[2])
+path=args[3]
 
-#Read data
+#Re data
 set.seed(20240902)
-job_num <- 1
+
 # for local 
 data <- readRDS(paste0("../Data/","split", job_num,".rds"))
 # for server
 # data <- readRDS(paste0("/home/panruyi/scratch/MixCopula/Data/","split", job_num,".rds"))
-U <- data$train
-TT<- length(U)
+U_train <- data$train
+TT<- length(U_train)
 nts <- c(1:TT)
 for (day in c(1:TT)) {
-  index <- apply(U[[day]],1, function(row) any(row %in% c(0, 1)))
-  U[[day]] <- U[[day]][!index,]
-  nts[[day]] <- nrow(U[[day]])
+  index <- apply(U_train[[day]],1, function(row) any(row %in% c(0, 1)))
+  U_train[[day]] <- U_train[[day]][!index,]
+  nts[[day]] <- nrow(U_train[[day]])
 }
 
 
@@ -22,8 +31,8 @@ U_test <- data$test
 TT<- length(U_test)
 for (day in c(1:TT)) {
   index <- apply(U_test[[day]],1, function(row) any(row %in% c(0, 1)))
-  U_test[[day]] <- U[[day]][!index,]
-  nts[[day]] <- nrow(U[[day]])
+  U_test[[day]] <- U_test[[day]][!index,]
+  nts[[day]] <- nrow(U_test[[day]])
 }
 
 
@@ -129,10 +138,10 @@ for (b in 1:B) {
           lam_t_plus <- lam[t+1]
         }
         prop_lam <- rnorm(1, lam_t, sqrt(1/delta_lam))
-        log_lam_rate <- loglik_at_t(prop_lam, U[[t]]) +
+        log_lam_rate <- loglik_at_t(prop_lam, U_train[[t]]) +
           log_prior_lam_t(lam_t_mius, prop_lam, lam_t_plus, alp, beta, tau) +
           dnorm(lam_t, prop_lam, sqrt(1/delta_lam), log=T)-
-          loglik_at_t(lam_t, U[[t]]) -
+          loglik_at_t(lam_t, U_train[[t]]) -
           log_prior_lam_t(lam_t_mius, lam_t, lam_t_plus, alp, beta, tau) +
           dnorm(prop_lam, lam_t,sqrt(1/delta_lam), log=T)
         if (log(runif(1)) <= log_lam_rate) {
@@ -143,36 +152,15 @@ for (b in 1:B) {
   }
 }
 
-
-lam_all[,2]
-emprical_cor <- 0
-for (t in 1:TT) {
-  emprical_cor[t] <- cor(U[[t]][,1], U[[t]][,2])
-}
-emprical_cor
-
-est_cor <- 0
-for (t in 1:TT) {
-  est_cor[t] <- mean(lam2rho(lam_all[,t]))
-}
-est_cor
-plot(1:TT, emprical_cor, type="l", col="red")
-lines(1:TT, est_cor, col="blue")
-
-range <- (burn_in*batch.size):(B*batch.size)
-plot(alp_all[range], type="l")
-plot(beta_all[range], type="l")
-plot(tau_all[range], type="l")
-
-mean(acc_alp[range])
-mean(acc_beta[range])
-mean(acc_tau[range])
-for(t in 1:TT) {
-  plot(lam_all[range,t], type="l")
-}
-range <- (burn_in*batch.size):(B*batch.size)
-
-
+range <- seq(burn_in*batch.size, B*batch.size, 10)
+rho_all <- apply(lam_all[range, ], 1, lam2rho)
+#obtain DIC and LPML, WAIC
+#WAIC
+WAIC <- WAIC(U_train, lam_all[range,])
+#LPML
+LPML <- LPML(U_train, lam_all[range,])
+#DIC
+DIC <- DIC(U_train, lam_all[range,])
 
 U_test <- data$test
 MSEt <- vector()
@@ -198,27 +186,11 @@ for (t in 1:TT) {
 MSE <- sum(MSEt*nums)/sum(nums)
 
 
-#LPML
 
-
-#DIC
-
-
-#prediction
-#posterior mean of alpha, beta, and lambda_(t-1)
-alp_hat <- mean(alp_all[range])
-beta_hat <- mean(beta_all[range])
-lam_t <- lam_all[, ncol(lam_all[range,])]
-lam_t_hat <- alp_hat + beta_hat * mean(lam_t)
-rho_t_hat  <- lam2rho(lam_t_hat)
-
-MSE #0.08363305 #0.04445941
-
-temp2 <- readRDS("../../../../../Narval/Results/single_cv/job_name=single_cvjob_num=1CV.rds")
-temp2$LPML
-temp2$DIC
-
-temp1 <- readRDS("../../../../../Narval/Results/mix_cv/job_name=mix_cvjob_num=1CV_mix.rds")
-temp1$MSE #0.04299
-temp1$LPML
-temp1$DIC
+res <- list(U_train=U_train, U_test=U_test, 
+            alp_all=alp_all, beta_all=beta_all, tau_all=tau_all, lam_all=lam_all,
+            WAIC=WAIC, DIC=DIC, LPML=LPML,
+            MSE=MSE,MSEt=MSEt)
+filename<- paste0("job_name=", job_name,"job_num=", job_num, 
+                  "CV",".rds")
+saveRDS(res, paste0(path,"/",filename))

@@ -1,24 +1,24 @@
-#Out of sample prediction performance
-#By using log predictive scores (LPS)
-#We need to fitting the model 6 times 1-30, 1-31, 1-32, 1-33, ..., 1-35
-#and do one step ahead prediction
 library(mvtnorm)
 library(foreach)
 library(doParallel)
+source("Gaussian_Copula_Helper.R")
+source("LPML_DIC_WAIC.R")
+source("simulation_helper.R")
 args=(commandArgs(TRUE))
 job_name=args[1]
 job_num=as.numeric(args[2])
 path=args[3]
-source("Gaussian_Copula_Helper.R")
-source("LPML_DIC_WAIC.R")
-TT <- c(30:35)[job_num]
-set.seed(20240902)
-data  <- readRDS("../Data/PM_O3_2017_2019.rds")
 
-#remove the data contain 1 or 0 because density equal to 0 on boundary
-U_train <- data[1:TT]
-U_test <- data[TT+1]
+set.seed(20231213)
+TT <- 19
+nt <- 300
+U <- simulate_mixC(TT+1, 300)
 
+U_train <- U[1:TT]
+U_test <- U[TT+1]
+
+
+#removing the boudary points
 TT<- length(U_train)
 nts <- c(1:TT)
 for (day in c(1:TT)) {
@@ -162,13 +162,13 @@ predictive_dist <- NULL
 lam_t <- lam_all[, t]
 for (k in range) {
   lam_t_predict <- alp_all[k] + beta_all[k]*lam_t[k] +
-                   rnorm(1, 0, sqrt(1/tau_all[k]))
+    rnorm(1, 0, sqrt(1/tau_all[k]))
   rho_t_predict <- lam2rho(lam_t_predict)
   temp_dist <- apply(U_test[[1]], 1, function(row) dGaussian(rho_t_predict , row))
   predictive_dist <- cbind(predictive_dist, temp_dist)
 }
 predictive_dist_mean <- rowMeans(predictive_dist)
-LPS <- sum(log(predictive_dist_mean)) #4.6
+LPS <- sum(log(predictive_dist_mean)) 
 
 res <- list(U_train=U_train, U_test=U_test, 
             alp_all=alp_all, beta_all=beta_all, tau_all=tau_all, lam_all=lam_all,
