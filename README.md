@@ -1,2 +1,2 @@
 # TD-MRC
-Bivariate ***T***emporal Dependence via Mixtures of Rotated Copulas
+Bivariate **T**emporal **D**ependence via **M**ixtures of **R**otated **C**opulas
