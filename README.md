@@ -4,7 +4,7 @@ Bivariate **T**emporal **D**ependence via **M**ixtures of **R**otated **C**opula
 This repository contains various models and results related to mixture models and Clayton copulas. Below is a summary of the contents of each folder and its purpose.
 
 ## Data
-  - This folder contains the real data. Full data and splited data 
+  - This folder contains the real data. Full data and split data for cross-validation.
 
 ## Implementations
 
@@ -31,5 +31,5 @@ This repository contains various models and results related to mixture models an
 ### 4. **Prediction_Result**
    - Contains prediction results from the applied models.  Mainly using LPS (log predictive score) to evaluate Their performance were evaluated mainly by LPS (log predictive score).
 
-### 5. **Prediction_Result**
+### 5. **Result**
    - Contains some old results which can be ignored.
