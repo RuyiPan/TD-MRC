@@ -1,2 +1,2 @@
 # TD-MRC
-Bivariate Temporal Dependence via Mixtures of Rotated Copulas
+Bivariate ***T***emporal Dependence via Mixtures of Rotated Copulas
