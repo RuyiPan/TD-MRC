@@ -11,10 +11,10 @@ This repository contains various models and results related to mixture models an
 ### 1. **MixClayton**
    - Includes files implementing the mixture Clayton model.
 
-### 9. **SingleClayton**
+### 2. **SingleClayton**
    - Includes implementation and results for the single Clayton model.
      
-### 4. **Gaussian**
+### 3. **Gaussian**
    - This folder holds files and scripts related to the Gaussian models.
 
 ## Results
