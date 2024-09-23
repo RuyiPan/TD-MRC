@@ -11,6 +11,7 @@ job_num=as.numeric(args[2])
 path=args[3]
 MA=as.numeric(args[4])
 Season=as.numeric(args[5])
+ct=as.numeric(args[6])
 TT <- c(30:35)[job_num]
 data  <- readRDS("../Data/PM_O3_2017_2019.rds")
 
@@ -38,7 +39,6 @@ U_test[[1]] <- U_test[[1]][!id_test ,]
 dep_type <- list(MA=MA,Season=c(12,Season))
 #
 ak <- 1
-ct <- 2
 c0 <- 1
 p <- rep(0.25, 4)  #sum p =1
 cts <- rep(ct, TT)
