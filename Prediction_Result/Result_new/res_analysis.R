@@ -153,3 +153,83 @@ DIC <- round(rbind(MixC_MA0_S1[4,],
                     MixC_MA1_S2[4,],
                     MixC_MA2_S2[4,]),2)
 DIC
+
+
+
+MixC_MA0_S1 <- NULL
+for (i in 1:6) {
+  temp <- readRDS(paste0("../Result_new/MixC_Prediction_MA0_S1_ct1/job_name=MixC_Prediction_MA0_S1_ct1job_num=",i,"LPS_mix_new.rds"))
+  MixC_MA0_S1 <- cbind(MixC_MA0_S1,
+                       c(temp$LPS,temp$LPML, temp$WAIC$WAIC, temp$DIC))
+}
+round(MixC_MA0_S1,2)
+
+
+
+MixC_MA0_S2 <- NULL
+for (i in 1:6) {
+  temp <- readRDS(paste0("../Result_new/MixC_Prediction_MA0_S2_ct1/job_name=MixC_Prediction_MA0_S2_ct1job_num=",i,"LPS_mix_new.rds"))
+  MixC_MA0_S2 <- cbind(MixC_MA0_S2,
+                       c(temp$LPS,temp$LPML, temp$WAIC$WAIC, temp$DIC))
+}
+round(MixC_MA0_S2,2)
+
+
+
+MixC_MA1_S1 <- NULL
+for (i in 1:6) {
+  temp <- readRDS(paste0("../Result_new/MixC_Prediction_MA1_S1_ct1/job_name=MixC_Prediction_MA1_S1_ct1job_num=",i,"LPS_mix_new.rds"))
+  MixC_MA1_S1 <- cbind(MixC_MA1_S1,
+                       c(temp$LPS,temp$LPML, temp$WAIC$WAIC, temp$DIC))
+}
+round(MixC_MA1_S1,2)
+
+
+MixC_MA1_S2 <- NULL
+for (i in 1:6) {
+  temp <- readRDS(paste0("../Result_new/MixC_Prediction_MA1_S2_ct1/job_name=MixC_Prediction_MA1_S2_ct1job_num=",i,"LPS_mix_new.rds"))
+  MixC_MA1_S2 <- cbind(MixC_MA1_S2,
+                       c(temp$LPS,temp$LPML, temp$WAIC$WAIC, temp$DIC))
+}
+round(MixC_MA1_S2,2)
+
+
+MixC_MA2_S2 <- NULL
+for (i in 1:6) {
+  temp <- readRDS(paste0("../Result_new/MixC_Prediction_MA2_S2_ct1/job_name=MixC_Prediction_MA2_S2_ct1job_num=",i,"LPS_mix_new.rds"))
+  MixC_MA2_S2 <- cbind(MixC_MA2_S2,
+                       c(temp$LPS,temp$LPML, temp$WAIC$WAIC, temp$DIC))
+}
+round(MixC_MA2_S2,2)
+LPS <- round(rbind(MixC_MA0_S1[1,],
+                   MixC_MA0_S2[1,],
+                   MixC_MA1_S1[1,],
+                   MixC_MA1_S2[1,],
+                   MixC_MA2_S2[1,]),2)
+cbind(LPS,rowSums(LPS))
+
+LPML <- round(rbind(MixC_MA0_S1[2,],
+                    MixC_MA0_S2[2,],
+                    MixC_MA1_S1[2,],
+                    MixC_MA1_S2[2,],
+                    MixC_MA2_S2[2,]),2)
+LPML
+
+
+WAIC <- round(rbind(MixC_MA0_S1[3,],
+                    MixC_MA0_S2[3,],
+                    MixC_MA1_S1[3,],
+                    MixC_MA1_S2[3,],
+                    MixC_MA2_S2[3,]),2)
+WAIC
+
+
+
+
+DIC <- round(rbind(MixC_MA0_S1[4,],
+                   MixC_MA0_S2[4,],
+                   MixC_MA1_S1[4,],
+                   MixC_MA1_S2[4,],
+                   MixC_MA2_S2[4,]),2)
+DIC
+
