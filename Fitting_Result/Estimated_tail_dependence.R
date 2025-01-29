@@ -30,10 +30,10 @@ df_tail <- data.frame(
   Mean = as.vector(est_tail_mean),
   Lower = as.vector(est_tail_lower),
   Upper = as.vector(est_tail_upper),
-  Lambda = rep(paste0("Lambda", 1:4), each = TT)
+  Lambda = rep(c("Lambda00", "Lambda10","Lambda11","Lambda01"), each = TT)
 )
 
-df_tail$Lambda <- factor(df_tail$Lambda, levels = c("Lambda4", "Lambda3", "Lambda1", "Lambda2"))
+df_tail$Lambda <- factor(df_tail$Lambda, levels = c("Lambda01", "Lambda11", "Lambda00", "Lambda10"))
 library(ggplot2)
 library(dplyr)
 library(tidyr)

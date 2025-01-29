@@ -3,7 +3,7 @@ Parameters <- expand.grid(c(0,1,2,3,4,5),c(0,1,2,3,4), c(0,1,2))
 job_num <- which(apply(Parameters, 1, function(row) all(row == c(1,1,2))))
 
 temp_res <- readRDS(paste0("Result_new/job_name=MixClayton_fitting_realjob_num=",job_num,"LPS_mix_new.rds"))
-
+TT <- length(temp_res$nts)
 burn.in <- 100
 B <- 200
 batch.size <- 50
@@ -37,9 +37,9 @@ df_Pi <- data.frame(
   Mean = unlist(lapply(1:4, function(k) Pi_mean[k][[1]][1, ])),
   Lower = unlist(lapply(1:4, function(k) Pi_mean[k][[1]][2, ])),
   Upper = unlist(lapply(1:4, function(k) Pi_mean[k][[1]][3, ])),
-  Pi = rep(paste0("Pi", 1:4), each = TT)
+  Pi = rep(paste0("Pi", c("00","10","11","01")), each = TT)
 )
-df_Pi$Pi <- factor(df_Pi$Pi, levels = c("Pi4", "Pi3", "Pi1", "Pi2"))
+df_Pi$Pi <- factor(df_Pi$Pi, levels = c("Pi01", "Pi11", "Pi00", "Pi10"))
 library(ggplot2)
 library(dplyr)
 library(tidyr)
@@ -72,9 +72,9 @@ df_Theta <- data.frame(
   Mean = unlist(lapply(1:4, function(k) Theta_mean[k][[1]][1, ])),
   Lower = unlist(lapply(1:4, function(k) Theta_mean[k][[1]][2, ])),
   Upper = unlist(lapply(1:4, function(k) Theta_mean[k][[1]][3, ])),
-  Theta = rep(paste0("Theta", 1:4), each = TT)
+  Theta = rep(paste0("Theta", c("00","10","11","01")), each = TT)
 )
-df_Theta$Theta <- factor(df_Theta$Theta, levels = c("Theta4", "Theta3", "Theta1", "Theta2"))
+df_Theta$Theta <- factor(df_Theta$Theta, levels =c("Theta01", "Theta11", "Theta00", "Theta10"))
 library(ggplot2)
 library(dplyr)
 library(tidyr)
