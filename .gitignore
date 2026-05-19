@@ -33,6 +33,6 @@ MixClayton/*_optimized.rds
 MixClayton/*.png
 
 # Local copied data/results that should not be part of package source
-Data/data_2017_2019.rds
+Data/
 MCMC_MRC/Data/*.rds
 MCMC_MRC/Data/*.csv
