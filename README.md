@@ -24,23 +24,6 @@ remotes::install_github("RuyiPan/TD-MRC", subdir = "MixClayton/mixclayton")
 library(TDMRC)
 ```
 
-Install locally from this repository:
-
-```r
-install.packages("MixClayton/mixclayton", repos = NULL, type = "source")
-library(TDMRC)
-```
-
-Main package functions:
-
-```r
-run_mixclayton_mdim_mcmc()
-run_mixclayton_mdim_prediction_mcmc()
-compute_waic()
-compute_lpml()
-compute_dic()
-simulate_mixclayton()
-```
 
 ## Analysis Scripts
 
@@ -59,7 +42,4 @@ These scripts assume the package has already been installed.
 MixClayton/      Original mixture Clayton scripts and the package source.
 SingleClayton/   Single Clayton comparison scripts.
 Gaussian/        Gaussian comparison scripts.
-MCMC_MRC/        Multivariate development scripts.
 ```
-
-Generated results and local data files are not included in the GitHub upload.
