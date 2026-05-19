@@ -16,10 +16,17 @@ Fitting_Result/
 Prediction_Result/
 Result/
 Simulation_Result/
-MCMC_MRC/Result/
-MixClayton/real_data_grid/results/
-MixClayton/real_data_grid/
+
+# Keep these local-only. The GitHub repo should expose the package and analysis
+# scripts, not development folders or generated outputs.
+MCMC_MRC/
+MixClayton/*
+!MixClayton/analysis/
+!MixClayton/analysis/**
+!MixClayton/mixclayton/
+!MixClayton/mixclayton/**
 MixClayton/analysis/*/results/
+
 MixClayton/*_runtime.csv
 MixClayton/*_runtime.rds
 MixClayton/*_optimized.rds
