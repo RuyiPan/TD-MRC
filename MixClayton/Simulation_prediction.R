@@ -13,6 +13,14 @@ path=args[3]
 MA=as.numeric(args[4])
 Season=as.numeric(args[5])
 
+
+if (is.na(job_name)) job_name <- "Simulation_prediction"
+if (is.na(job_num)) job_num <- 1
+if (is.na(path)) path <- getwd()
+if (is.na(MA)) MA <- 2
+if (is.na(Season)) Season <- 12
+if (!dir.exists(path)) dir.create(path, recursive = TRUE)
+
 set.seed(20231213)
 TT <- 19
 nt <- 300
@@ -46,8 +54,8 @@ p <- rep(0.25, 4)  #sum p =1
 cts <- rep(ct, TT)
 
 
-burn_in=100
-B=200
+burn_in=60
+B=140
 batch.size=50
 M = B*batch.size
 
@@ -94,14 +102,12 @@ acc = matrix(0.3, nrow=TT, ncol=4)
 acc.all <- array(dim=c(B,TT,4))
 ada.shape <- matrix(1, nrow=TT, ncol=4)  # initial value
 kappa.all <- array(dim=c(B,TT,4))
-C <- 1.01 #1.01,   1.1 (still fluctuate )
+C <- 2 #1.01,   1.1 (still fluctuate )
 for (b in 1:B) {
   print(b)
   ## adaptive , diminishing  
-  if (b <=100) {
-    ada.shape[acc < 0.3] <- ada.shape[acc < 0.3]*C^(sqrt(b))
-    ada.shape[acc > 0.4] <- ada.shape[acc > 0.4]*C^(-sqrt(b))
-  } 
+  ada.shape[acc < 0.3] <- ada.shape[acc < 0.3]*C^(1/sqrt(b))
+  ada.shape[acc > 0.4] <- ada.shape[acc > 0.4]*C^(-1/sqrt(b))
   # print(acc)
   # print(ada.shape)
   kappa.all[b,,] <- ada.shape
@@ -284,3 +290,18 @@ saveRDS(res, paste0(path,"/",filename))
 
 
 
+plot(
+  res$kappa.all[,1,4],
+  type = "l",
+  xlab = "Iteration",
+  ylab = "Kappa",
+  main = "Trace Plot of Kappa"
+)
+
+plot(
+  res$acc.all[,1,4],
+  type = "l",
+  xlab = "Iteration",
+  ylab = "Acceptance Rate",
+  main = "Trace Plot of Acceptance Rate"
+)

@@ -88,14 +88,12 @@ acc = matrix(0.3, nrow=TT, ncol=4)
 acc.all <- array(dim=c(B,TT,4))
 ada.shape <- matrix(1, nrow=TT, ncol=4)  # initial value
 kappa.all <- array(dim=c(B,TT,4))
-C <- 1.01 #1.01,   1.1 (still fluctuate )
+C <- 2 #1.01,   1.1 (still fluctuate )
 for (b in 1:B) {
   print(b)
   ## adaptive , diminishing  
-  if (b <=100) {
-    ada.shape[acc < 0.3] <- ada.shape[acc < 0.3]*C^(sqrt(b))
-    ada.shape[acc > 0.4] <- ada.shape[acc > 0.4]*C^(-sqrt(b))
-  } 
+  ada.shape[acc < 0.3] <- ada.shape[acc < 0.3]*C^(1/sqrt(b))
+  ada.shape[acc > 0.4] <- ada.shape[acc > 0.4]*C^(-1/sqrt(b))
   # print(acc)
   # print(ada.shape)
   kappa.all[b,,] <- ada.shape

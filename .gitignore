@@ -1,0 +1,31 @@
+.DS_Store
+.Rhistory
+.RData
+.Rproj.user/
+
+# R build/check artifacts
+*.tar.gz
+*.Rcheck/
+src/*.o
+src/*.so
+src/*.dll
+
+# Generated result folders and local outputs
+CV_Result/
+Fitting_Result/
+Prediction_Result/
+Result/
+Simulation_Result/
+MCMC_MRC/Result/
+MixClayton/real_data_grid/results/
+MixClayton/real_data_grid/
+MixClayton/analysis/*/results/
+MixClayton/*_runtime.csv
+MixClayton/*_runtime.rds
+MixClayton/*_optimized.rds
+MixClayton/*.png
+
+# Local copied data/results that should not be part of package source
+Data/data_2017_2019.rds
+MCMC_MRC/Data/*.rds
+MCMC_MRC/Data/*.csv

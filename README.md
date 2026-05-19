@@ -1,35 +1,65 @@
 # TD-MRC
-Bivariate **T**emporal **D**ependence via **M**ixtures of **R**otated **C**opulas
 
-This repository contains various models and results related to mixture models and Clayton copulas. Below is a summary of the contents of each folder and its purpose.
+Temporal dependence modeling via mixtures of reflected Clayton copulas.
 
-## Data
-  - This folder contains the real data. Full data and split data for cross-validation.
+This repository contains the R package source for the TD-MRC MCMC sampler plus
+separate scripts for simulation and real-data analyses.
 
-## Implementations
+## R Package
 
-### 1. **MixClayton**
-   - Includes files implementing the mixture Clayton model.
+The package source is in:
 
-### 2. **SingleClayton**
-   - Includes implementation and results for the single Clayton model.
-     
-### 3. **Gaussian**
-   - This folder holds files and scripts related to the Gaussian models.
+```text
+MixClayton/mixclayton
+```
 
-## Results
+The GitHub repository is named `TD-MRC`, while the R package name is `TDMRC`
+because R package names cannot contain hyphens.
 
-### 1. **Simulation_Result**
-   - This folder contains the results from the three different models. Simulated data is from a dynamic mixture of Clayton.
+Install from GitHub:
 
-### 2. **Fitting_Result**
-   - Contains the results from fitting models to real data. The files provide full insights into how the models fit under different dependence structures and strengths.
-     
-### 3. **CV_Result**
-   - Contains cross-validation results from the applied models. These results are used to evaluate the performance of different models based on their predictive accuracy.
+```r
+install.packages("remotes")
+remotes::install_github("RuyiPan/TD-MRC", subdir = "MixClayton/mixclayton")
+library(TDMRC)
+```
 
-### 4. **Prediction_Result**
-   - Contains prediction results from the applied models.  Mainly using LPS (log predictive score) to evaluate Their performance were evaluated mainly by LPS (log predictive score).
+Install locally from this repository:
 
-### 5. **Result**
-   - Contains some old results which can be ignored.
+```r
+install.packages("MixClayton/mixclayton", repos = NULL, type = "source")
+library(TDMRC)
+```
+
+Main package functions:
+
+```r
+run_mixclayton_mdim_mcmc()
+run_mixclayton_mdim_prediction_mcmc()
+compute_waic()
+compute_lpml()
+compute_dic()
+simulate_mixclayton()
+```
+
+## Analysis Scripts
+
+Paper-specific scripts are kept outside the package:
+
+```text
+MixClayton/analysis/simulation_m2/run_simulation_grid_m2.R
+MixClayton/analysis/real_data_m3/run_real_data_grid_m3.R
+```
+
+These scripts assume the package has already been installed.
+
+## Other Folders
+
+```text
+MixClayton/      Original mixture Clayton scripts and the package source.
+SingleClayton/   Single Clayton comparison scripts.
+Gaussian/        Gaussian comparison scripts.
+MCMC_MRC/        Multivariate development scripts.
+```
+
+Generated results and local data files are not included in the GitHub upload.
