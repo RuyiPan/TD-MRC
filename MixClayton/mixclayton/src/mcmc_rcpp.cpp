@@ -1,4 +1,5 @@
 #include <Rcpp.h>
+#include <limits>
 using namespace Rcpp;
 
 inline double clayton_log_density(const std::vector<double>& u, double theta) {
@@ -34,6 +35,12 @@ NumericMatrix clayton_rot_logdens_cpp(const NumericMatrix& U, const NumericVecto
   const int n = U.nrow();
   const int m = U.ncol();
   const int K = theta.size();
+  if (m < 2) {
+    stop("`U` must have at least two columns.");
+  }
+  if (m >= std::numeric_limits<int>::digits) {
+    stop("`m` is too large: 2^m exceeds the supported matrix dimension range.");
+  }
   const int expected_K = 1 << m;
 
   if (K != expected_K) {

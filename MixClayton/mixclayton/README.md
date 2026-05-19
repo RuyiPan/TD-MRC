@@ -10,6 +10,10 @@ This package only contains general MCMC, scoring, simulation, and helper
 functions. Paper-specific simulation studies and real-data grid runs are kept
 outside the package in `MixClayton/analysis/`.
 
+The fitted dimension `m` is inferred from the number of columns in the data;
+the mixture uses `2^m` rotated components, subject only to practical memory and
+runtime limits.
+
 ## Install
 
 From the `TD-MRC` folder:

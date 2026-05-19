@@ -147,7 +147,7 @@ run_mixclayton_mcmc <- function(data,
 
   TT <- length(U_train)
   m <- ncol(U_train[[1]])
-  K <- 2^m
+  K <- component_count(m)
   if (is.null(p)) p <- rep(1 / K, K)
   if (is.null(init_z_prob)) init_z_prob <- p
 
@@ -249,7 +249,9 @@ run_mixclayton_mcmc <- function(data,
         Pi[j, t, ] <- rdirichlet_fast(tempPar)
       }
 
-      Eta <- update_eta(Eta, Pi[j, , ], omega, ats, c0, p, eta_sets, inv_sets)
+      Pi_j <- Pi[j, , , drop = FALSE]
+      dim(Pi_j) <- c(TT, K)
+      Eta <- update_eta(Eta, Pi_j, omega, ats, c0, p, eta_sets, inv_sets)
       Eta.all[j, , ] <- Eta
 
       omega <- rdirichlet_fast(c0 * p + colSums(Eta))
@@ -307,8 +309,8 @@ run_mixclayton_mcmc <- function(data,
 
 #' Run MCMC for m-dimensional rotated copula mixtures
 #'
-#' This is a descriptive alias for `run_mixclayton_mcmc()`. It supports
-#' `m = 2, 3, 4, 5`, inferred from the number of data columns.
+#' This is a descriptive alias for `run_mixclayton_mcmc()`. The dimension `m`
+#' is inferred from the number of data columns.
 #'
 #' @inheritParams run_mixclayton_mcmc
 #' @export
@@ -363,7 +365,7 @@ run_mixclayton_prediction_mcmc <- function(data,
 #' Run m-dimensional MCMC and compute prediction/model-comparison scores
 #'
 #' This is a descriptive alias for `run_mixclayton_prediction_mcmc()`. It
-#' supports `m = 2, 3, 4, 5`, inferred from the number of data columns.
+#' infers `m` from the number of data columns.
 #'
 #' @inheritParams run_mixclayton_prediction_mcmc
 #' @export

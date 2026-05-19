@@ -74,6 +74,19 @@ eta_component_sum <- function(Eta, idx, k) {
   if (length(idx) == 1) Eta[idx, k] else sum(Eta[idx, k])
 }
 
+component_count <- function(m) {
+  if (length(m) != 1 || is.na(m) || m != floor(m) || m < 2) {
+    stop("`m` must be a single integer greater than or equal to 2.")
+  }
+
+  K <- 2^as.integer(m)
+  if (!is.finite(K) || K > .Machine$integer.max) {
+    stop("`2^m` is too large for R matrix/array dimensions.")
+  }
+
+  as.integer(K)
+}
+
 #' Generate the reflection index table for m-dimensional components
 #'
 #' The row order matches the m-dimensional scripts in `MCMC_MRC`: for `m = 3`
@@ -84,12 +97,15 @@ eta_component_sum <- function(Eta, idx, k) {
 #'   component and a 0 means use `u_j`.
 #' @export
 generate_component_index <- function(m) {
-  if (!(m %in% 2:5)) stop("This package currently supports m = 2, 3, 4, or 5.")
+  K <- component_count(m)
+  m <- as.integer(m)
+
   idx <- as.matrix(expand.grid(rep(list(c(0L, 1L)), m)))
   idx <- idx[do.call(order, as.data.frame(idx)), , drop = FALSE]
   storage.mode(idx) <- "integer"
   rownames(idx) <- NULL
   colnames(idx) <- paste0("u", seq_len(m))
+  if (nrow(idx) != K) stop("Internal error: component index has the wrong number of rows.")
   idx
 }
 
@@ -134,7 +150,7 @@ validate_mcmc_inputs <- function(data, burn_in, B, batch.size, C_tune,
   if (!is.list(data)) stop("`data` must be a list of matrices after cleaning.")
   data_dims <- vapply(data, ncol, integer(1))
   if (any(data_dims != m)) stop("All data matrices must have the same number of columns.")
-  if (!(m %in% 2:5)) stop("This package currently supports m = 2, 3, 4, or 5.")
+  component_count(m)
   if (length(p) != K || any(p <= 0) || abs(sum(p) - 1) > 1e-8) {
     stop("`p` must be a positive length-2^m vector that sums to 1.")
   }
