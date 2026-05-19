@@ -61,10 +61,10 @@ update_eta <- function(Eta, Pi_j, omega, ats, c0, p, eta_sets, inv_sets) {
   Eta
 }
 
-#' Run MCMC for an m-dimensional dynamic mixture of reflected Clayton copulas
+#' Run MCMC for an m-dimensional dynamic mixture of rotated copulas
 #'
 #' @param data A list of matrices, one matrix per time point. The number of
-#'   columns is `m`, and the sampler uses `2^m` reflected Clayton components.
+#'   columns is `m`, and the sampler uses `2^m` rotated components.
 #' @param burn_in Number of burn-in batches. Stored in output for downstream use.
 #' @param B Number of batches.
 #' @param batch.size Number of MCMC iterations per batch.
@@ -305,7 +305,7 @@ run_mixclayton_mcmc <- function(data,
   fit
 }
 
-#' Run MCMC for m-dimensional reflected Clayton mixtures
+#' Run MCMC for m-dimensional rotated copula mixtures
 #'
 #' This is a descriptive alias for `run_mixclayton_mcmc()`. It supports
 #' `m = 2, 3, 4, 5`, inferred from the number of data columns.

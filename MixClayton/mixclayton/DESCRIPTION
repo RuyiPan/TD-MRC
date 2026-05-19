@@ -1,10 +1,10 @@
 Package: TDMRC
 Type: Package
-Title: TD-MRC: MCMC Sampler for Dynamic Mixtures of Reflected Clayton Copulas
+Title: TD-MRC: MCMC Sampler for Dynamic Mixtures of Rotated Copulas
 Version: 0.1.1
 Authors@R: person("Ruyi", "Pan", role = c("aut", "cre"), email = "ruyi.pan@mail.utoronto.ca")
-Description: Utilities and an optimized MCMC sampler for m-dimensional dynamic
-    mixtures of reflected Clayton copulas with 2^m components.
+Description: Utilities and an optimized MCMC sampler for m-dimensional temporal
+    dependence modeling via mixtures of rotated copulas with 2^m components.
 License: MIT
 Encoding: UTF-8
 Imports:

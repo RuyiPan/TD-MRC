@@ -1,6 +1,6 @@
 # TD-MRC
 
-Temporal dependence modeling via mixtures of reflected Clayton copulas.
+Temporal dependence modeling via mixtures of rotated copulas.
 
 This repository contains the R package source for the TD-MRC MCMC sampler plus
 separate scripts for simulation and real-data analyses.

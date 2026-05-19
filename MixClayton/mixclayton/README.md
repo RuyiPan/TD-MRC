@@ -1,7 +1,7 @@
 # TD-MRC
 
-Reusable R package for MCMC fitting of dynamic mixtures of reflected Clayton
-copulas. The package supports `m = 2, 3, 4, 5` dimensions and automatically uses
+Reusable R package for MCMC fitting of temporal dependence models via mixtures
+of rotated copulas. The package supports `m = 2, 3, 4, 5` dimensions and automatically uses
 `2^m` mixture components.
 
 The GitHub repository can be named `TD-MRC`. The R package name is `TDMRC`
