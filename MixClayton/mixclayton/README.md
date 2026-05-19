@@ -49,16 +49,27 @@ add_prediction_scores()
 simulate_mixclayton()
 ```
 
-## Example
+## Example: fit an m = 2 simulated data set
 
 ```r
 library(TDMRC)
 
+# Simulate a small m = 2 data set.
+# The data object is a list, with one matrix for each time point.
+set.seed(20231213)
+U_train <- simulate_mixclayton(
+  TT = 20,
+  nt = 300,
+  theta = c(5, 3, 4, 3),
+  weights0 = c(0.4, 0.25, 0.1, 0.25)
+)
+
+# For m = 2, the model has 2^m = 4 mixture components.
 fit <- run_mixclayton_mdim_prediction_mcmc(
   data = U_train,
   U_test = NULL,
-  burn_in = 100,
-  B = 200,
+  burn_in = 60,
+  B = 140,
   batch.size = 50,
   thin = 10,
   C_tune = 2,
@@ -66,8 +77,9 @@ fit <- run_mixclayton_mdim_prediction_mcmc(
   at = 4,
   c0 = 1,
   p = NULL,
-  dep_type = list(MA = 4, Season = c(12, 2)),
-  seed = 20231213
+  dep_type = list(MA = 2, Season = c(12, 0)),
+  seed = 20231213,
+  verbose = FALSE
 )
 
 fit$WAIC
@@ -75,4 +87,5 @@ fit$LPML
 fit$DIC
 ```
 
-If `U_test = NULL`, LPS is skipped. If `U_test` is supplied, LPS is computed.
+Increase `burn_in` and `B` for the final analysis. If `U_test = NULL`, LPS is
+skipped. If `U_test` is supplied, LPS is computed.
