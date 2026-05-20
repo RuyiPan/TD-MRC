@@ -23,6 +23,11 @@ simulate_clayton_copula <- function(n, m, theta) {
   (1 + exponential_draws / frailty)^(-1 / theta)
 }
 
+rdirichlet_one <- function(alpha) {
+  draws <- rgamma(length(alpha), shape = alpha, rate = 1)
+  draws / sum(draws)
+}
+
 component_bits <- function(k, m) {
   as.integer(intToBits(k - 1L)[seq_len(m)])
 }
@@ -48,7 +53,7 @@ simulate_mixclayton_mdim <- function(TT,
     active_center <- 1L + ((t - 1L) %% K)
     concentration <- rep(1, K)
     concentration[active_center] <- 12
-    weights_t <- as.numeric(rdirichlet_fast(40 * base_weights + concentration))
+    weights_t <- as.numeric(rdirichlet_one(40 * base_weights + concentration))
 
     z <- sample(seq_len(K), n_t, replace = TRUE, prob = weights_t)
     U_t <- matrix(NA_real_, nrow = n_t, ncol = m)
