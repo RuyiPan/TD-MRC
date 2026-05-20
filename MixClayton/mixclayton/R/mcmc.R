@@ -45,11 +45,16 @@ update_eta <- function(Eta, Pi_j, omega, ats, c0, p, eta_sets, inv_sets) {
           lgamma(current_eta[t, ref_k] + 1) +
           current_denom_ref
 
+        log_omega_k <- log(pmax(omega[k], .Machine$double.xmin))
+        log_omega_ref <- log(pmax(omega[ref_k], .Machine$double.xmin))
+        log_pi_k <- sum(log(pmax(Pi_j[inv_set, k], .Machine$double.xmin)))
+        log_pi_ref <- sum(log(pmax(Pi_j[inv_set, ref_k], .Machine$double.xmin)))
+
         ratio <- (prop_etak - current_etak) *
-          (log(omega[k]) + sum(log(Pi_j[inv_set, k])) - log(omega[ref_k]) - sum(log(Pi_j[inv_set, ref_k]))) +
+          (log_omega_k + log_pi_k - log_omega_ref - log_pi_ref) +
           current_dense - prop_dense
 
-        if (log(runif(1)) <= ratio) {
+        if (is.finite(ratio) && log(runif(1)) <= ratio) {
           current_eta <- prop_eta
         }
       }
